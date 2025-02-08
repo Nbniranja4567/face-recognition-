@@ -1,0 +1,58 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Recognition Attendance System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Face Recognition Attendance System</h1>
+
+        <!-- Register Face Section -->
+        <div class="section">
+            <h2>Register Face</h2>
+            <video id="video" width="400" height="300" autoplay></video>
+            <canvas id="canvas" width="400" height="300" style="display: none;"></canvas>
+            <button id="capture-btn">Capture</button>
+            <input type="text" id="name" placeholder="Enter your name">
+            <button id="register-btn">Register</button>
+            <p id="register-status"></p>
+        </div>
+
+        <!-- Mark Attendance Section -->
+        <div class="section">
+            <h2>Mark Attendance</h2>
+            <video id="attendance-video" width="400" height="300" autoplay></video>
+            <canvas id="attendance-canvas" width="400" height="300" style="display: none;"></canvas>
+            <button id="mark-attendance-btn">Mark Attendance</button>
+            <p id="attendance-status"></p>
+        </div>
+
+        <!-- View Attendance Records Section -->
+        <div class="section">
+            <h2>Attendance Records</h2>
+            <table id="attendance-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Attendance records will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
+
+
+
