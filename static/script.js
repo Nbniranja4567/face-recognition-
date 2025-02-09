@@ -14,6 +14,7 @@ const registerStatus = document.getElementById('register-status');
 const attendanceVideo = document.getElementById('attendance-video');
 const attendanceCanvas = document.getElementById('attendance-canvas');
 const markAttendanceBtn = document.getElementById('mark-attendance-btn');
+const startBtn = document.getElementById('start-btn');
 const attendanceStatus = document.getElementById('attendance-status');
 
 // Attendance table
@@ -56,31 +57,53 @@ registerBtn.addEventListener('click', async () => {
 });
 
 // Mark attendance
-markAttendanceBtn.addEventListener('click', async () => {
+const markedNames = new Set(); // Track marked attendance
+
+async function attendanceMark() {
     const context = attendanceCanvas.getContext('2d');
     context.drawImage(attendanceVideo, 0, 0, attendanceCanvas.width, attendanceCanvas.height);
     const image = attendanceCanvas.toDataURL('image/jpeg');
 
-    const response = await fetch('/mark-attendance', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ image }),
-    });
+    try {
+        const response = await fetch('/mark-attendance', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ image }),
+        });
 
-    const result = await response.json();
-    attendanceStatus.textContent = result.message;
+        if (!response.ok) throw new Error('Network response was not ok');
 
-    if (result.attendance) {
-        const row = attendanceTable.insertRow();
-        const nameCell = row.insertCell(0);
-        const dateCell = row.insertCell(1);
-        const timeCell = row.insertCell(2);
-        nameCell.textContent = result.attendance.name;
-        dateCell.textContent = result.attendance.date;
-        timeCell.textContent = result.attendance.time;
+        const result = await response.json();
+        attendanceStatus.textContent = result.message;
+
+        if (result.attendance) {
+            const { name, date, time } = result.attendance;
+
+            if (!markedNames.has(name)) { // Check for duplicates
+                markedNames.add(name);
+                const row = attendanceTable.insertRow();
+                row.insertCell(0).textContent = name;
+                row.insertCell(1).textContent = date;
+                row.insertCell(2).textContent = time;
+            }
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        attendanceStatus.textContent = 'Error marking attendance.';
+    }
+}
+
+let running = false;
+
+startBtn.addEventListener('click', async () => {
+    if (running) return; // Prevent multiple instances
+    running = true;
+
+    while (running) {
+        await attendanceMark();
+        await new Promise(r => setTimeout(r, 4000));
     }
 });
-
 
