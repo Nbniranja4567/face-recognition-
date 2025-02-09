@@ -29,15 +29,13 @@ navigator.mediaDevices.getUserMedia({ video: true })
         console.error("Error accessing webcam: ", err);
     });
 
-// Capture image for registration
-captureBtn.addEventListener('click', () => {
-    const context = canvas.getContext('2d');
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    registerBtn.disabled = false;
-});
 
 // Register face
 registerBtn.addEventListener('click', async () => {
+    const context = canvas.getContext('2d');
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    registerBtn.disabled = false;
+    await new Promise(r => setTimeout(r, 500));
     const name = nameInput.value;
     if (!name) {
         alert("Please enter your name.");
