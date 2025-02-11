@@ -64,35 +64,40 @@ async function attendanceMark() {
     context.drawImage(attendanceVideo, 0, 0, attendanceCanvas.width, attendanceCanvas.height);
     const image = attendanceCanvas.toDataURL('image/jpeg');
 
-    try {
-        const response = await fetch('/mark-attendance', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ image }),
-        });
+	const response = await fetch('/mark-attendance', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({ image }),
+	});
 
-        if (!response.ok) throw new Error('Network response was not ok');
+	const result = await response.json();
+	attendanceStatus.textContent = result.message;
+	const name = result.name;
 
-        const result = await response.json();
-        attendanceStatus.textContent = result.message;
+	if (!name || markedNames.has(name)) {
+		return;
+	}
+	save_attendance(name);
+}
 
-        if (result.attendance) {
-            const { name, date, time } = result.attendance;
+async function save_attendance(name) {
+    const response = await fetch('/save-attendance', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name }),
+    });
+	const result = await response.json();
 
-            if (!markedNames.has(name)) { // Check for duplicates
-                markedNames.add(name);
-                const row = attendanceTable.insertRow();
-                row.insertCell(0).textContent = name;
-                row.insertCell(1).textContent = date;
-                row.insertCell(2).textContent = time;
-            }
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        attendanceStatus.textContent = 'Error marking attendance.';
-    }
+	const { date, time } = result.attendance;
+	markedNames.add(name);
+	const row = attendanceTable.insertRow();
+	row.insertCell(0).textContent = name;
+	row.insertCell(1).textContent = date;
+	row.insertCell(2).textContent = time;
 }
 
 let running = false;
