@@ -49,13 +49,23 @@ def load_face_encodings():
         return [(row[0], np.frombuffer(row[1], dtype=np.float64)) for row in cursor.fetchall()]
 
 # Helper function to save attendance record
-def save_attendance(name):
+@app.route('/save-attendance', methods=['POST'])
+def save_attendance():
+    data = request.json
+    name = data.get('name')
     now = datetime.now()
     date = now.strftime('%Y-%m-%d')
     time = now.strftime('%H:%M:%S')
     with sqlite3.connect(DATABASE) as conn:
         conn.execute('INSERT INTO attendance (name, date, time) VALUES (?, ?, ?)', (name, date, time))
         conn.commit()
+    return jsonify({
+        'message': 'Attendance marked successfully',
+        'attendance': {
+            'date': date,
+            'time': time
+        }
+    }), 200
 
 # Register face endpoint
 @app.route('/register', methods=['POST'])
@@ -100,15 +110,10 @@ def mark_attendance():
     for name, registered_encoding in registered_faces:
         match = face_recognition.compare_faces([registered_encoding], face_encoding, tolerance=0.5)
         if match[0]:
-            save_attendance(name)
             return jsonify({
-                'message': 'Attendance marked successfully',
-                'attendance': {
-                    'name': name,
-                    'date': datetime.now().strftime('%Y-%m-%d'),
-                    'time': datetime.now().strftime('%H:%M:%S')
-                }
-            }), 200
+                'message': 'Face detected',
+                'name': name
+                }), 200
 
     return jsonify({'message': 'Face not recognized'}), 400
 
